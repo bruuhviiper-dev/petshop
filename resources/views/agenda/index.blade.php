@@ -104,7 +104,7 @@
                             </div>
                         </div>
                     @empty
-                        <p class="text-xs text-gray-400">Nenhum agendamento pendente.</p>
+                        <x-empty-state icon="calendar" title="Sem agendamentos" description="Nenhum agendamento pendente para hoje." />
                     @endforelse
                 </x-card>
             </div>

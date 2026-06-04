@@ -27,13 +27,17 @@ $maxWidthClass = [
     <div x-show="open"
          x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
          x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-         class="relative bg-white rounded-xl shadow-2xl w-full {{ $maxWidthClass }} z-10 max-h-[90vh] flex flex-col">
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="modal-title-{{ $id }}"
+         class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full {{ $maxWidthClass }} z-10 max-h-[90vh] flex flex-col">
 
         @if($title)
-        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
-            <h3 class="text-base font-semibold text-gray-800">{{ $title }}</h3>
+        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700 shrink-0">
+            <h3 id="modal-title-{{ $id }}" class="text-base font-semibold text-gray-800 dark:text-gray-100">{{ $title }}</h3>
             <button @click="open = false; document.body.classList.remove('overflow-hidden')"
-                    class="text-gray-400 hover:text-gray-600 transition-colors">
+                    aria-label="Fechar modal"
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
@@ -41,7 +45,7 @@ $maxWidthClass = [
         </div>
         @endif
 
-        <div class="p-5 overflow-y-auto">
+        <div class="p-5 overflow-y-auto dark:text-gray-100">
             {{ $slot }}
         </div>
     </div>
