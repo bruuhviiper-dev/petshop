@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="pt-BR" x-data="darkModeApp()" x-bind:class="{ 'dark': dark }">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? config('app.name') }}</title>
+    {{-- Aplica dark mode ANTES do render para evitar flash --}}
+    <script>if(localStorage.getItem('darkMode')==='true')document.documentElement.classList.add('dark');</script>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet"/>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -18,7 +20,8 @@
     </style>
 </head>
 <body class="font-sans antialiased bg-gray-100 dark:bg-gray-950 min-h-screen transition-colors duration-200"
-      x-data="Object.assign(darkModeApp(), { sidebarOpen: window.innerWidth >= 1024 })">
+      x-data="{ sidebarOpen: window.innerWidth >= 1024, dark: localStorage.getItem('darkMode') === 'true',
+                toggleDark() { this.dark = !this.dark; localStorage.setItem('darkMode', this.dark); document.documentElement.classList.toggle('dark', this.dark); } }">
 
     {{-- Sidebar --}}
     <aside class="fixed top-0 left-0 h-full w-60 bg-gray-900 dark:bg-gray-950 text-white flex flex-col z-30 shadow-xl transition-transform duration-200"

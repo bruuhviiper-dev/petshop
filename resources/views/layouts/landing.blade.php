@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="pt-BR" x-data="{ dark: localStorage.getItem('darkMode') === 'true', menuOpen: false }"
-      x-bind:class="{ 'dark': dark }" class="scroll-smooth">
+<html lang="pt-BR" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'PetAgenda — Sistema Premium para Petshops' }}</title>
     <meta name="description" content="{{ $description ?? 'Sistema completo de agenda e gestão para petshops e banho & tosa. Agendamentos, clientes, financeiro, WhatsApp e muito mais.' }}">
+    <script>if(localStorage.getItem('darkMode')==='true')document.documentElement.classList.add('dark');</script>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:300,400,500,600,700,800&display=swap" rel="stylesheet"/>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -37,7 +37,9 @@
         [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="font-sans antialiased bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+<body class="font-sans antialiased bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-300"
+      x-data="{ dark: localStorage.getItem('darkMode') === 'true', menuOpen: false,
+                toggleDark() { this.dark = !this.dark; localStorage.setItem('darkMode', this.dark); document.documentElement.classList.toggle('dark', this.dark); } }">
 
     {{ $slot }}
 
