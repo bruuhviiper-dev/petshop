@@ -19,6 +19,7 @@ class AgendamentoPublicoRequest extends FormRequest
             'servico_id'    => 'required|integer',
             'data'          => 'required|date|after_or_equal:today',
             'horario'       => 'required|date_format:H:i',
+            'website'       => 'max:0', // honeypot — bots preenchem, humanos deixam vazio
         ];
     }
 }
