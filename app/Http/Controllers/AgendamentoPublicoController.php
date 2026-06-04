@@ -5,75 +5,69 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AgendamentoPublicoRequest;
 use App\Jobs\EnviarConfirmacaoAgendamento;
 use App\Models\Agendamento;
-use App\Models\Cliente;
-use App\Models\Horario;
 use App\Models\Pet;
 use App\Models\Petshop;
 use App\Models\Servico;
+use App\Services\AgendamentoService;
+use App\Services\ClienteService;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class AgendamentoPublicoController extends Controller
 {
-    public function show(string $slug)
+    public function __construct(
+        private readonly AgendamentoService $agendamentoService,
+        private readonly ClienteService $clienteService,
+    ) {}
+
+    /**
+     * Exibe a página pública de agendamento para um petshop.
+     */
+    public function show(string $slug): View
     {
-        $petshop = Petshop::where('slug', $slug)->where('active', true)->firstOrFail();
+        $petshop  = Petshop::where('slug', $slug)->where('active', true)->firstOrFail();
         $servicos = Servico::where('petshop_id', $petshop->id)->where('active', true)->get();
+
         return view('publico.agendar', compact('petshop', 'servicos'));
     }
 
-    public function horarios(Request $request, string $slug)
+    /**
+     * Retorna os slots de horário disponíveis para uma data e serviço.
+     */
+    public function horarios(Request $request, string $slug): JsonResponse
     {
         $petshop = Petshop::where('slug', $slug)->where('active', true)->firstOrFail();
-        $date = Carbon::parse($request->get('data', today()));
-        $weekday = $date->dayOfWeek;
-
-        $horario = Horario::where('petshop_id', $petshop->id)
-            ->where('weekday', $weekday)
-            ->first();
-
-        if (!$horario || $horario->closed) {
-            return response()->json(['slots' => []]);
-        }
+        $date    = Carbon::parse($request->get('data', today()));
 
         $servicoId = $request->get('servico_id');
-        $duracao = 60;
+        $duracao   = 60;
+
         if ($servicoId) {
             $servico = Servico::where('petshop_id', $petshop->id)->find($servicoId);
-            if ($servico) $duracao = $servico->duration_minutes;
-        }
-
-        $abertura = Carbon::parse($date->format('Y-m-d') . ' ' . $horario->open);
-        $fechamento = Carbon::parse($date->format('Y-m-d') . ' ' . $horario->close);
-
-        $agendados = Agendamento::where('petshop_id', $petshop->id)
-            ->whereDate('scheduled_at', $date)
-            ->whereNotIn('status', ['cancelado'])
-            ->pluck('scheduled_at')
-            ->map(fn($d) => Carbon::parse($d)->format('H:i'))
-            ->toArray();
-
-        $slots = [];
-        $current = $abertura->copy();
-        while ($current->copy()->addMinutes($duracao)->lte($fechamento)) {
-            $hora = $current->format('H:i');
-            if (!in_array($hora, $agendados)) {
-                $slots[] = $hora;
+            if ($servico) {
+                $duracao = $servico->duration_minutes;
             }
-            $current->addMinutes(30);
         }
+
+        $slots = $this->agendamentoService->calcularSlotsDisponiveis($date, $petshop->id, $duracao);
 
         return response()->json(['slots' => $slots]);
     }
 
-    public function store(AgendamentoPublicoRequest $request, string $slug)
+    /**
+     * Cria um novo agendamento público pelo formulário de 3 etapas.
+     */
+    public function store(AgendamentoPublicoRequest $request, string $slug): JsonResponse
     {
         $petshop = Petshop::where('slug', $slug)->where('active', true)->firstOrFail();
         $servico = Servico::where('petshop_id', $petshop->id)->findOrFail($request->servico_id);
 
-        $cliente = Cliente::firstOrCreate(
-            ['petshop_id' => $petshop->id, 'phone' => $request->dono_telefone],
-            ['name' => $request->dono_nome, 'petshop_id' => $petshop->id]
+        $cliente = $this->clienteService->firstOrCreate(
+            $petshop->id,
+            $request->dono_telefone,
+            $request->dono_nome
         );
 
         $pet = Pet::firstOrCreate(
@@ -82,17 +76,18 @@ class AgendamentoPublicoController extends Controller
                 'cliente_id' => $cliente->id,
                 'species'    => $request->pet_especie,
                 'breed'      => $request->pet_raca,
+                'retorno_dias' => 30,
             ]
         );
 
         $agendamento = Agendamento::create([
-            'petshop_id'  => $petshop->id,
-            'cliente_id'  => $cliente->id,
-            'pet_id'      => $pet->id,
-            'servico_id'  => $servico->id,
-            'scheduled_at'=> Carbon::parse($request->data . ' ' . $request->horario),
-            'valor'       => $servico->price,
-            'status'      => 'pendente',
+            'petshop_id'   => $petshop->id,
+            'cliente_id'   => $cliente->id,
+            'pet_id'       => $pet->id,
+            'servico_id'   => $servico->id,
+            'scheduled_at' => Carbon::parse($request->data . ' ' . $request->horario),
+            'valor'        => $servico->price,
+            'status'       => 'pendente',
         ]);
 
         dispatch(new EnviarConfirmacaoAgendamento($agendamento->id));
