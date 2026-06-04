@@ -13,6 +13,7 @@ use App\Repositories\RelatorioRepository;
 use App\Services\AgendamentoService;
 use App\Services\ClienteService;
 use App\Services\PetService;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
@@ -29,6 +30,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Blade::component('layouts.landing', 'landing-layout');
+
         Event::listen(AgendamentoCriado::class, DispararConfirmacaoWhatsapp::class);
         Event::listen(AgendamentoConcluido::class, LancarFinanceiro::class);
         Event::listen(AgendamentoConcluido::class, IncrementarFidelidade::class);

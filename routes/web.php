@@ -18,7 +18,7 @@ Route::prefix('agendar')->name('publico.')->middleware(['throttle:agendamento-pu
     Route::post('/{slug}', [AgendamentoPublicoController::class, 'store'])->name('store');
 });
 
-Route::get('/', fn() => redirect()->route('login'));
+Route::get('/', fn() => view('home'))->name('home');
 
 Route::middleware(['auth', 'petshop.setup'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
