@@ -1,0 +1,123 @@
+{
+  "info": {
+    "_postman_id": "petagenda-public-api",
+    "name": "PetAgenda — API Pública",
+    "description": "Coleção de rotas públicas do PetAgenda para agendamento online.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "slug",
+      "value": "pet-tosa-ana",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Página pública de agendamento",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "text/html"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/agendar/{{slug}}",
+          "host": ["{{base_url}}"],
+          "path": ["agendar", "{{slug}}"]
+        },
+        "description": "Carrega a página pública de agendamento de 3 etapas para um petshop."
+      },
+      "response": []
+    },
+    {
+      "name": "Horários disponíveis",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/agendar/{{slug}}/horarios?data=2026-06-10&servico_id=1",
+          "host": ["{{base_url}}"],
+          "path": ["agendar", "{{slug}}", "horarios"],
+          "query": [
+            {
+              "key": "data",
+              "value": "2026-06-10",
+              "description": "Data no formato YYYY-MM-DD"
+            },
+            {
+              "key": "servico_id",
+              "value": "1",
+              "description": "ID do serviço para calcular duração"
+            }
+          ]
+        },
+        "description": "Retorna os slots de horário disponíveis para uma data e serviço específicos."
+      },
+      "response": [
+        {
+          "name": "Exemplo de resposta",
+          "status": "OK",
+          "code": 200,
+          "body": "{\"slots\":[\"08:00\",\"08:30\",\"09:00\",\"09:30\",\"10:00\",\"14:00\",\"14:30\",\"15:00\"]}"
+        }
+      ]
+    },
+    {
+      "name": "Criar agendamento público",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrf_token}}",
+            "description": "Token CSRF obtido do meta tag na página"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"dono_nome\": \"Maria da Silva\",\n  \"dono_telefone\": \"(11) 99999-0000\",\n  \"pet_nome\": \"Bolinha\",\n  \"pet_especie\": \"Cachorro\",\n  \"pet_raca\": \"Poodle\",\n  \"servico_id\": 1,\n  \"data\": \"2026-06-10\",\n  \"horario\": \"10:00\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/agendar/{{slug}}",
+          "host": ["{{base_url}}"],
+          "path": ["agendar", "{{slug}}"]
+        },
+        "description": "Cria um novo agendamento público. Cria ou recupera o cliente pelo telefone."
+      },
+      "response": [
+        {
+          "name": "Agendamento criado com sucesso",
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"success\": true,\n  \"agendamento\": {\n    \"id\": 42,\n    \"petshop\": \"Pet & Tosa da Ana\",\n    \"pet\": \"Bolinha\",\n    \"servico\": \"Banho P\",\n    \"scheduled_at\": \"10/06/2026 10:00\",\n    \"valor\": \"R$ 45,00\"\n  }\n}"
+        }
+      ]
+    }
+  ]
+}

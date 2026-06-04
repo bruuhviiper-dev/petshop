@@ -2,17 +2,29 @@
 
 namespace App\Http\Controllers;
 
+use App\DTOs\ClienteData;
 use App\Http\Requests\StoreClienteRequest;
 use App\Http\Requests\UpdateClienteRequest;
 use App\Models\Cliente;
+use App\Services\ClienteService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class ClienteController extends Controller
 {
-    public function index(Request $request)
+    public function __construct(
+        private readonly ClienteService $clienteService,
+    ) {}
+
+    /**
+     * Lista os clientes do petshop com paginação e busca.
+     */
+    public function index(Request $request): View
     {
         $clientes = Cliente::withCount('pets')
-            ->when($request->q, fn($q, $search) =>
+            ->when($request->q, fn ($q, $search) =>
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('phone', 'like', "%{$search}%")
             )
@@ -23,57 +35,88 @@ class ClienteController extends Controller
         return view('clientes.index', compact('clientes'));
     }
 
-    public function show(Cliente $cliente)
+    /**
+     * Exibe a ficha completa de um cliente com seus pets e histórico.
+     */
+    public function show(Cliente $cliente): View
     {
         $cliente->load([
             'pets.vacinas',
-            'agendamentos' => fn($q) => $q->with(['servico', 'colaborador'])->orderByDesc('scheduled_at')->limit(20),
+            'agendamentos' => fn ($q) => $q->with(['servico', 'colaborador'])->orderByDesc('scheduled_at')->limit(20),
         ]);
 
         return view('clientes.show', compact('cliente'));
     }
 
-    public function create()
+    /**
+     * Exibe o formulário de criação de cliente.
+     */
+    public function create(): View
     {
         return view('clientes.create');
     }
 
-    public function store(StoreClienteRequest $request)
+    /**
+     * Armazena um novo cliente no banco de dados.
+     */
+    public function store(StoreClienteRequest $request): RedirectResponse
     {
-        $cliente = Cliente::create($request->validated());
+        $cliente = $this->clienteService->criar(
+            ClienteData::fromRequest($request->validated()),
+            auth()->user()->petshop->id
+        );
+
         return redirect()->route('clientes.show', $cliente)->with('success', 'Cliente cadastrado com sucesso!');
     }
 
-    public function edit(Cliente $cliente)
+    /**
+     * Exibe o formulário de edição de cliente.
+     */
+    public function edit(Cliente $cliente): View
     {
         return view('clientes.edit', compact('cliente'));
     }
 
-    public function update(UpdateClienteRequest $request, Cliente $cliente)
+    /**
+     * Atualiza os dados de um cliente existente.
+     */
+    public function update(UpdateClienteRequest $request, Cliente $cliente): RedirectResponse
     {
-        $cliente->update($request->validated());
+        $this->clienteService->atualizar(
+            $cliente,
+            ClienteData::fromRequest($request->validated())
+        );
+
         return redirect()->route('clientes.show', $cliente)->with('success', 'Cliente atualizado!');
     }
 
-    public function destroy(Cliente $cliente)
+    /**
+     * Remove um cliente do banco de dados.
+     */
+    public function destroy(Cliente $cliente): RedirectResponse
     {
         $cliente->delete();
+
         return redirect()->route('clientes.index')->with('success', 'Cliente removido.');
     }
 
-    public function buscar(Request $request)
+    /**
+     * Busca clientes por nome ou telefone para uso em autocomplete.
+     */
+    public function buscar(Request $request): JsonResponse
     {
-        $q = $request->get('q', '');
-        $clientes = Cliente::with('pets')
-            ->where('name', 'like', "%{$q}%")
-            ->orWhere('phone', 'like', "%{$q}%")
-            ->limit(10)
-            ->get()
-            ->map(fn($c) => [
+        $query    = $request->get('q', '');
+        $clientes = $this->clienteService
+            ->buscar($query, auth()->user()->petshop->id)
+            ->map(fn ($c) => [
                 'id'    => $c->id,
                 'name'  => $c->name,
                 'phone' => $c->phone,
-                'pets'  => $c->pets->map(fn($p) => ['id' => $p->id, 'name' => $p->name, 'species' => $p->species]),
+                'pets'  => $c->pets->map(fn ($p) => [
+                    'id'      => $p->id,
+                    'name'    => $p->name,
+                    'species' => $p->species,
+                ]),
             ]);
 
         return response()->json($clientes);

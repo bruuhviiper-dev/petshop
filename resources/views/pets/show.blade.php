@@ -27,13 +27,13 @@
             </x-card>
             <x-card title="Vacinas">
                 @forelse($pet->vacinas as $v)
-                    <div class="py-2 border-b border-gray-50 last:border-0">
-                        <p class="text-sm font-medium text-gray-800">{{ $v->name }}</p>
-                        <p class="text-xs text-gray-500">Aplicada: {{ $v->date_applied->format('d/m/Y') }}</p>
+                    <div class="py-2 border-b border-gray-50 dark:border-gray-700 last:border-0">
+                        <p class="text-sm font-medium text-gray-800 dark:text-gray-100">{{ $v->name }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Aplicada: {{ $v->date_applied->format('d/m/Y') }}</p>
                         @if($v->next_date) <p class="text-xs {{ $v->next_date->isPast() ? 'text-red-500' : 'text-green-600' }}">Próxima: {{ $v->next_date->format('d/m/Y') }}</p> @endif
                     </div>
                 @empty
-                    <p class="text-sm text-gray-400">Nenhuma vacina registrada.</p>
+                    <x-empty-state icon="syringe" title="Nenhuma vacina registrada" description="Adicione o histórico de vacinação deste pet." />
                 @endforelse
             </x-card>
         </div>

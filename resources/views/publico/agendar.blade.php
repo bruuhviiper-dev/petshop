@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Agendar — {{ $petshop->name }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
@@ -35,6 +36,11 @@
 
     <main class="max-w-lg mx-auto px-4 py-8"
           x-data="agendamentoPublico('{{ $petshop->slug }}', {{ $servicos->toJson() }})">
+
+        {{-- Honeypot anti-bot --}}
+        <div style="display:none" aria-hidden="true">
+            <input type="text" name="website" class="hidden" autocomplete="off" tabindex="-1" x-ref="honeypot">
+        </div>
 
         {{-- Passos --}}
         <div class="flex items-center justify-center gap-2 mb-8">
@@ -200,10 +206,11 @@
                 if (!this.form.horario) { this.erro = 'Selecione um horário.'; return; }
                 this.carregando = true;
                 try {
+                    const payload = { ...this.form, website: '' }; // honeypot vazio
                     const r = await fetch(`/agendar/${slug}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content ?? '', 'Accept': 'application/json' },
-                        body: JSON.stringify(this.form),
+                        body: JSON.stringify(payload),
                     });
                     const data = await r.json();
                     if (data.success) { this.confirmacao = data.agendamento; this.etapa = 4; }

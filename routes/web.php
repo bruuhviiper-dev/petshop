@@ -11,8 +11,8 @@ use App\Http\Controllers\PetController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-// Public scheduling link
-Route::prefix('agendar')->name('publico.')->group(function () {
+// Public scheduling link (rate limited)
+Route::prefix('agendar')->name('publico.')->middleware(['throttle:agendamento-publico'])->group(function () {
     Route::get('/{slug}', [AgendamentoPublicoController::class, 'show'])->name('agendar');
     Route::get('/{slug}/horarios', [AgendamentoPublicoController::class, 'horarios'])->name('horarios');
     Route::post('/{slug}', [AgendamentoPublicoController::class, 'store'])->name('store');
