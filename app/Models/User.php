@@ -33,6 +33,9 @@ class User extends Authenticatable
         ];
     }
 
+    /** Petshop resolvido (admin = dono; colaborador = vínculo). Cacheado na instância. */
+    private ?Petshop $resolvedPetshop = null;
+
     public function petshop()
     {
         return $this->hasOne(Petshop::class);
@@ -41,6 +44,28 @@ class User extends Authenticatable
     public function colaborador()
     {
         return $this->hasOne(Colaborador::class);
+    }
+
+    /**
+     * Petshop do usuário, seja admin (dono) ou colaborador (vínculo na tabela colaboradores).
+     * Usa withoutGlobalScopes() ao buscar o colaborador para evitar recursão com o
+     * global scope de BelongsToPetshop (que também chama este método).
+     */
+    public function currentPetshop(): ?Petshop
+    {
+        if ($this->resolvedPetshop) {
+            return $this->resolvedPetshop;
+        }
+
+        $petshop = $this->petshop
+            ?: $this->colaborador()->withoutGlobalScopes()->first()?->petshop;
+
+        return $this->resolvedPetshop = $petshop;
+    }
+
+    public function currentPetshopId(): ?int
+    {
+        return $this->currentPetshop()?->id;
     }
 
     public function isAdmin(): bool

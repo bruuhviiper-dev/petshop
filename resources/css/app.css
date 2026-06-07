@@ -1,3 +1,61 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    /* Gradiente fixo da marca do template (páginas públicas: landing + auth) */
+    .gradient-brand {
+        background: linear-gradient(135deg, #7C3AED 0%, #9333EA 50%, #6D28D9 100%);
+    }
+
+    /*
+    | Form helpers — garantem contraste correto em dark mode.
+    | Use sempre que criar labels/inputs no app autenticado para evitar
+    | texto cinza invisível no tema escuro.
+    */
+    .form-label {
+        @apply block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1;
+    }
+    .form-input,
+    .form-select,
+    .form-textarea {
+        @apply w-full text-sm rounded-lg px-3 py-2
+               border border-gray-300 dark:border-gray-600
+               bg-white dark:bg-gray-700
+               text-gray-900 dark:text-gray-100
+               placeholder-gray-400 dark:placeholder-gray-500
+               transition-colors disabled:opacity-60;
+    }
+    /* Ring de foco usa a cor da marca (var) — não dá para usar ring-brand/20 no @apply */
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+        outline: none;
+        border-color: var(--color-brand);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand) 25%, transparent);
+    }
+    .form-hint  { @apply text-xs text-gray-500 dark:text-gray-400; }
+    .form-error { @apply text-xs text-red-500 dark:text-red-400; }
+}
+
+/*
+| Utilidades dirigidas pela cor do petshop (--color-brand definida no layout do app).
+| Permite que a cor escolhida nas Configurações reflita em todo o sistema.
+*/
+.bg-brand        { background-color: var(--color-brand) !important; }
+.text-brand      { color: var(--color-brand) !important; }
+.border-brand    { border-color: var(--color-brand) !important; }
+.ring-brand      { --tw-ring-color: var(--color-brand) !important; }
+.bg-brand-soft   { background-color: color-mix(in srgb, var(--color-brand) 12%, transparent) !important; }
+.text-on-brand   { color: #fff !important; }
+.hover\:bg-brand:hover { background-color: var(--color-brand) !important; }
+
+/* Botão sólido com a cor da marca */
+.btn-brand {
+    background-color: var(--color-brand);
+    color: #fff;
+    transition: filter .15s ease, box-shadow .15s ease;
+}
+.btn-brand:hover { filter: brightness(1.08); }
+
+[x-cloak] { display: none !important; }

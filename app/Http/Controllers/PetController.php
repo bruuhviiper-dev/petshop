@@ -24,6 +24,9 @@ class PetController extends Controller
      */
     public function show(Cliente $cliente, Pet $pet): View
     {
+        // Garante o token da carteirinha digital (QR Code).
+        $pet->ensurePublicToken();
+
         $pet->load([
             'vacinas',
             'agendamentos' => fn ($q) => $q->with(['servico', 'colaborador'])->orderByDesc('scheduled_at'),

@@ -9,16 +9,16 @@ class PetPolicy
 {
     public function view(User $user, Pet $pet): bool
     {
-        return $user->petshop && $user->petshop->id === $pet->cliente->petshop_id;
+        return $user->currentPetshopId() && $user->currentPetshopId() === $pet->cliente->petshop_id;
     }
 
     public function update(User $user, Pet $pet): bool
     {
-        return $user->petshop && $user->petshop->id === $pet->cliente->petshop_id;
+        return $user->currentPetshopId() && $user->currentPetshopId() === $pet->cliente->petshop_id;
     }
 
     public function delete(User $user, Pet $pet): bool
     {
-        return $user->petshop && $user->petshop->id === $pet->cliente->petshop_id;
+        return $user->currentPetshopId() && $user->currentPetshopId() === $pet->cliente->petshop_id;
     }
 }

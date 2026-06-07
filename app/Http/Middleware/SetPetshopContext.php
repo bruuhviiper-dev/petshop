@@ -11,8 +11,8 @@ class SetPetshopContext
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->user() && $request->user()->petshop) {
-            $petshop = $request->user()->petshop;
+        $petshop = $request->user()?->currentPetshop();
+        if ($petshop) {
             config(['petshop.current' => $petshop]);
             View::share('currentPetshop', $petshop);
         }

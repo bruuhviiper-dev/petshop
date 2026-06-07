@@ -9,16 +9,16 @@ class AgendamentoPolicy
 {
     public function view(User $user, Agendamento $agendamento): bool
     {
-        return $user->petshop && $user->petshop->id === $agendamento->petshop_id;
+        return $user->currentPetshopId() && $user->currentPetshopId() === $agendamento->petshop_id;
     }
 
     public function update(User $user, Agendamento $agendamento): bool
     {
-        return $user->petshop && $user->petshop->id === $agendamento->petshop_id;
+        return $user->currentPetshopId() && $user->currentPetshopId() === $agendamento->petshop_id;
     }
 
     public function delete(User $user, Agendamento $agendamento): bool
     {
-        return $user->petshop && $user->petshop->id === $agendamento->petshop_id;
+        return $user->currentPetshopId() && $user->currentPetshopId() === $agendamento->petshop_id;
     }
 }

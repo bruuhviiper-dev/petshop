@@ -21,6 +21,7 @@ class Pet extends Model
         'allergies',
         'notes',
         'photo',
+        'public_token',
         'retorno_dias',
     ];
 
@@ -49,5 +50,15 @@ class Pet extends Model
     public function ultimoAgendamento()
     {
         return $this->hasOne(Agendamento::class)->latestOfMany('scheduled_at');
+    }
+
+    /** Garante um token público para a carteirinha digital e retorna-o. */
+    public function ensurePublicToken(): string
+    {
+        if (!$this->public_token) {
+            $this->forceFill(['public_token' => \Illuminate\Support\Str::random(32)])->save();
+        }
+
+        return $this->public_token;
     }
 }

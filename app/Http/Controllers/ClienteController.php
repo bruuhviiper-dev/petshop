@@ -63,7 +63,7 @@ class ClienteController extends Controller
     {
         $cliente = $this->clienteService->criar(
             ClienteData::fromRequest($request->validated()),
-            auth()->user()->petshop->id
+            auth()->user()->currentPetshopId()
         );
 
         return redirect()->route('clientes.show', $cliente)->with('success', 'Cliente cadastrado com sucesso!');
@@ -107,7 +107,7 @@ class ClienteController extends Controller
     {
         $query    = $request->get('q', '');
         $clientes = $this->clienteService
-            ->buscar($query, auth()->user()->petshop->id)
+            ->buscar($query, auth()->user()->currentPetshopId())
             ->map(fn ($c) => [
                 'id'    => $c->id,
                 'name'  => $c->name,

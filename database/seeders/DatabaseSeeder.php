@@ -11,6 +11,7 @@ use App\Models\Financeiro;
 use App\Models\Horario;
 use App\Models\Pet;
 use App\Models\Petshop;
+use App\Models\Produto;
 use App\Models\Servico;
 use App\Models\User;
 use Carbon\Carbon;
@@ -115,6 +116,7 @@ class DatabaseSeeder extends Seeder
             $this->criarHorarios($petshop->id);
             $servicos = $this->criarServicos($petshop->id);
             $colaboradores = $this->criarColaboradores($petshop->id);
+            $this->criarProdutos($petshop->id);
 
             FidelidadeConfig::create([
                 'petshop_id'               => $petshop->id,
@@ -195,6 +197,21 @@ class DatabaseSeeder extends Seeder
             $models[] = Servico::create(array_merge($s, ['petshop_id' => $petshopId]));
         }
         return $models;
+    }
+
+    private function criarProdutos(int $petshopId): void
+    {
+        $produtos = [
+            ['name' => 'Ração Premium Cães 15kg',     'category' => 'Ração',      'price' => 189.90, 'cost' => 120.00, 'stock_quantity' => 30],
+            ['name' => 'Ração Gatos Castrados 10kg',  'category' => 'Ração',      'price' => 159.90, 'cost' => 98.00,  'stock_quantity' => 25],
+            ['name' => 'Shampoo Neutro 500ml',        'category' => 'Higiene',    'price' => 29.90,  'cost' => 12.00,  'stock_quantity' => 40],
+            ['name' => 'Coleira Antipulgas',          'category' => 'Acessórios', 'price' => 79.90,  'cost' => 35.00,  'stock_quantity' => 15],
+            ['name' => 'Brinquedo Mordedor',          'category' => 'Brinquedo',  'price' => 24.90,  'cost' => 9.00,   'stock_quantity' => 3],
+            ['name' => 'Petisco Bifinho 500g',        'category' => 'Petisco',    'price' => 19.90,  'cost' => 8.00,   'stock_quantity' => 50],
+        ];
+        foreach ($produtos as $p) {
+            Produto::create(array_merge($p, ['petshop_id' => $petshopId, 'min_stock' => 5, 'unit' => 'un', 'active' => true]));
+        }
     }
 
     /** @return Colaborador[] */

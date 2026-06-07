@@ -19,7 +19,7 @@ class DashboardController extends Controller
      */
     public function index(): View
     {
-        $petshopId = auth()->user()->petshop->id;
+        $petshopId = auth()->user()->currentPetshopId();
         $hoje      = Carbon::today();
         $mesAtual  = Carbon::now();
 

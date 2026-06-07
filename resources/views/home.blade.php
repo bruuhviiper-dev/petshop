@@ -5,50 +5,63 @@
 {{-- ═══════════════════ NAVBAR ═══════════════════ --}}
 <nav class="fixed top-0 inset-x-0 z-50 transition-all duration-300"
      x-data="{ scrolled: false }"
-     x-init="window.addEventListener('scroll', () => scrolled = window.scrollY > 20)"
-     :class="scrolled ? 'bg-white/90 dark:bg-gray-950/90 backdrop-blur shadow-lg shadow-black/5' : 'bg-transparent'">
+     x-init="scrolled = window.scrollY > 20; window.addEventListener('scroll', () => scrolled = window.scrollY > 20)"
+     :class="scrolled ? 'bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl shadow-lg shadow-black/5 border-b border-gray-100 dark:border-gray-800' : 'bg-transparent'">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16 lg:h-18">
+        <div class="flex items-center justify-between h-16 lg:h-20">
 
             {{-- Logo --}}
             <a href="/" class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-lg gradient-brand flex items-center justify-center shadow-md">
-                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-9 h-9 rounded-xl gradient-brand flex items-center justify-center shadow-lg shadow-violet-500/30">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                               d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                     </svg>
                 </div>
-                <span class="font-bold text-lg text-gray-900 dark:text-white">Pet<span class="text-violet-600 dark:text-violet-400">Agenda</span></span>
+                <span class="font-bold text-lg transition-colors" :class="scrolled ? 'text-gray-900 dark:text-white' : 'text-white'">
+                    Pet<span class="text-violet-400" :class="scrolled ? 'dark:text-violet-400 text-violet-600' : 'text-violet-300'">Agenda</span>
+                </span>
             </a>
 
             {{-- Desktop Nav --}}
             <div class="hidden md:flex items-center gap-1">
-                @foreach ([['#features','Funcionalidades'],['#stack','Stack'],['#preview','Preview'],['#pricing','Preço']] as [$href,$label])
+                @foreach ([['#features','Funcionalidades'],['#stack','Tecnologia'],['#preview','Interface'],['#pricing','Preço']] as [$href,$label])
                     <a href="{{ $href }}"
-                       class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors">
+                       class="px-3.5 py-2 rounded-lg text-sm font-medium transition-colors"
+                       :class="scrolled ? 'text-gray-600 dark:text-gray-300 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20' : 'text-gray-200 hover:text-white hover:bg-white/10'">
                         {{ $label }}
                     </a>
                 @endforeach
             </div>
 
             {{-- CTA + Dark mode --}}
-            <div class="flex items-center gap-3">
-                <button @click="dark = !dark; localStorage.setItem('darkMode', dark)"
-                        class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                        aria-label="Alternar modo escuro">
-                    <svg x-show="!dark" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-                    </svg>
-                    <svg x-show="dark" x-cloak class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
-                    </svg>
-                </button>
+            <div class="flex items-center gap-2 sm:gap-3">
+                {{-- Toggle dark / light: ícones lado a lado --}}
+                <div class="inline-flex items-center gap-0.5 p-0.5 rounded-lg border transition-colors"
+                     :class="scrolled ? 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800' : 'border-white/20 bg-white/10'">
+                    <button @click="if(dark) toggleDark()" type="button"
+                            :class="!dark ? 'bg-white text-amber-500 shadow-sm' : (scrolled ? 'text-gray-400 hover:text-gray-600' : 'text-gray-300 hover:text-white')"
+                            class="p-1.5 rounded-md transition-colors" aria-label="Modo claro">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        </svg>
+                    </button>
+                    <button @click="if(!dark) toggleDark()" type="button"
+                            :class="dark ? 'bg-gray-700 text-violet-300 shadow-sm' : (scrolled ? 'text-gray-400 hover:text-gray-600' : 'text-gray-300 hover:text-white')"
+                            class="p-1.5 rounded-md transition-colors" aria-label="Modo escuro">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                        </svg>
+                    </button>
+                </div>
+
                 <a href="{{ route('login') }}"
-                   class="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-violet-400 hover:text-violet-600 transition-colors">
+                   class="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                   :class="scrolled ? 'text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-violet-400 hover:text-violet-600' : 'text-white border border-white/20 hover:bg-white/10'">
                     Entrar
                 </a>
                 <a href="{{ route('login') }}"
-                   class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-white gradient-brand hover:opacity-90 transition-opacity shadow-md shadow-violet-500/20">
+                   class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-white gradient-brand hover:opacity-90 transition-opacity shadow-lg shadow-violet-500/30">
                     Acessar demo
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
@@ -56,7 +69,8 @@
                 </a>
 
                 {{-- Mobile menu button --}}
-                <button @click="menuOpen = !menuOpen" class="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                <button @click="menuOpen = !menuOpen" class="md:hidden p-2 rounded-lg transition-colors"
+                        :class="scrolled ? 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800' : 'text-white hover:bg-white/10'">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                     </svg>
@@ -66,48 +80,52 @@
 
         {{-- Mobile menu --}}
         <div x-show="menuOpen" x-cloak x-transition
-             class="md:hidden pb-4 border-t border-gray-100 dark:border-gray-800">
-            <div class="flex flex-col gap-1 pt-3">
-                @foreach ([['#features','Funcionalidades'],['#stack','Stack'],['#preview','Preview'],['#pricing','Preço']] as [$href,$label])
+             class="md:hidden pb-4 mt-2 rounded-2xl bg-white dark:bg-gray-900 shadow-xl border border-gray-100 dark:border-gray-800 p-2">
+            <div class="flex flex-col gap-1">
+                @foreach ([['#features','Funcionalidades'],['#stack','Tecnologia'],['#preview','Interface'],['#pricing','Preço']] as [$href,$label])
                     <a href="{{ $href }}" @click="menuOpen = false"
-                       class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-600 transition-colors">
+                       class="px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-600 transition-colors">
                         {{ $label }}
                     </a>
                 @endforeach
+                <a href="{{ route('login') }}" class="px-3 py-2.5 rounded-lg text-sm font-semibold text-violet-600 dark:text-violet-400">Entrar no sistema →</a>
             </div>
         </div>
     </div>
 </nav>
 
 {{-- ═══════════════════ HERO ═══════════════════ --}}
-<section class="gradient-hero min-h-screen flex flex-col items-center justify-center relative overflow-hidden px-4">
+<section class="gradient-hero relative overflow-hidden px-4 pt-32 pb-20 lg:pt-40">
 
     {{-- Background blobs --}}
-    <div class="absolute top-20 left-1/4 w-96 h-96 bg-violet-600/20 rounded-full blur-3xl pointer-events-none"></div>
-    <div class="absolute bottom-20 right-1/4 w-80 h-80 bg-purple-500/15 rounded-full blur-3xl pointer-events-none"></div>
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-violet-800/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute top-20 left-1/4 w-96 h-96 bg-violet-600/25 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-0 right-1/4 w-80 h-80 bg-fuchsia-500/15 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute top-1/3 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-violet-800/10 rounded-full blur-3xl pointer-events-none"></div>
+    {{-- Grid sutil --}}
+    <div class="absolute inset-0 opacity-[0.07] pointer-events-none"
+         style="background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px); background-size: 56px 56px;"></div>
 
-    <div class="relative z-10 max-w-5xl mx-auto text-center">
+    <div class="relative z-10 max-w-4xl mx-auto text-center">
 
         {{-- Badge --}}
-        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full card-glass text-violet-300 text-xs font-medium mb-8 border border-violet-500/20">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full card-glass text-violet-200 text-xs font-medium mb-8 border border-violet-400/20">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
             Template Premium · Laravel 12 · Pronto para produção
         </div>
 
         {{-- Headline --}}
-        <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight mb-6 tracking-tight">
+        <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-[1.05] mb-6 tracking-tight">
             Gestão completa para<br>
             <span class="gradient-text">petshops modernos</span>
         </h1>
 
-        <p class="text-lg sm:text-xl text-gray-300/80 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Sistema completo de agenda, clientes, financeiro e WhatsApp.
+        <p class="text-lg sm:text-xl text-gray-300/90 max-w-2xl mx-auto mb-10 leading-relaxed">
+            Agenda, clientes, financeiro e WhatsApp em um só sistema.
             Pronto para usar, fácil de personalizar, feito para vender.
         </p>
 
         {{-- CTAs --}}
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
             <a href="{{ route('login') }}"
                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-white gradient-brand hover:opacity-90 transition-all shadow-xl shadow-violet-500/30 glow-purple text-base">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,18 +134,20 @@
                 </svg>
                 Acessar demo grátis
             </a>
-            <a href="{{ route('publico.agendar', 'pet-tosa-ana') }}"
+            @if(!empty($demoSlug))
+            <a href="{{ route('publico.agendar', $demoSlug) }}" target="_blank"
                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-white card-glass hover:bg-white/10 transition-all border border-white/10 text-base">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
                 Ver agendamento público
             </a>
+            @endif
         </div>
 
         {{-- Credenciais demo --}}
-        <p class="text-gray-500 text-sm">
-            Demo: <span class="font-mono text-violet-400">admin@demo.com</span> · <span class="font-mono text-violet-400">password</span>
+        <p class="text-gray-400 text-sm">
+            Demo: <span class="font-mono text-violet-300">admin@demo.com</span> · <span class="font-mono text-violet-300">password</span>
         </p>
     </div>
 
@@ -211,13 +231,6 @@
             </div>
         </div>
     </div>
-
-    {{-- Scroll indicator --}}
-    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 text-gray-500 animate-bounce">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-        </svg>
-    </div>
 </section>
 
 {{-- ═══════════════════ STATS ═══════════════════ --}}
@@ -281,7 +294,7 @@
                 ],
                 [
                     'Ficha Completa do Pet',
-                    'Histórico de agendamentos, vacinas, peso, temperamento, alergias e foto. Programa de fidelidade configur ável com premiação automática.',
+                    'Histórico de agendamentos, vacinas, peso, temperamento, alergias e foto. Programa de fidelidade configurável com premiação automática.',
                     'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z',
                     'pink',
                 ],
@@ -304,8 +317,8 @@
             $c = $colorMap[$color];
             @endphp
             <div class="feature-card group p-6 rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 hover:border-violet-200 dark:hover:border-violet-800 hover:shadow-xl hover:shadow-violet-500/5">
-                <div class="w-11 h-11 rounded-xl {{ $c['bg'] }} flex items-center justify-center mb-4">
-                    <svg class="w-5 h-5 {{ $c['text'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-12 h-12 rounded-xl {{ $c['bg'] }} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <svg class="w-6 h-6 {{ $c['text'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icon }}"/>
                     </svg>
                 </div>
@@ -349,7 +362,7 @@
                     @endforeach
                 </ul>
                 <div class="mt-8">
-                    <a href="{{ route('agenda.index') }}"
+                    <a href="{{ route('login') }}"
                        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white gradient-brand hover:opacity-90 transition-opacity shadow-lg shadow-violet-500/25">
                         Ver agenda ao vivo
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -438,7 +451,7 @@
 <section id="stack" class="py-20 px-4 bg-white dark:bg-gray-950">
     <div class="max-w-5xl mx-auto text-center">
         <span class="inline-block px-3 py-1 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400 text-xs font-semibold uppercase tracking-widest mb-4">
-            Stack
+            Tecnologia
         </span>
         <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-3">Tecnologias modernas e consolidadas</h2>
         <p class="text-gray-500 dark:text-gray-400 mb-12">Sem frameworks JavaScript pesados. Blade puro, Alpine.js reativo e Tailwind CSS responsivo.</p>
@@ -551,7 +564,7 @@
 <section class="gradient-hero py-24 px-4 text-center relative overflow-hidden">
     <div class="absolute inset-0 opacity-30">
         <div class="absolute top-1/4 left-1/3 w-64 h-64 bg-violet-600 rounded-full blur-3xl"></div>
-        <div class="absolute bottom-1/4 right-1/3 w-64 h-64 bg-purple-500 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-1/4 right-1/3 w-64 h-64 bg-fuchsia-500 rounded-full blur-3xl"></div>
     </div>
     <div class="relative z-10 max-w-2xl mx-auto">
         <h2 class="text-3xl sm:text-4xl font-bold text-white mb-5">
@@ -568,16 +581,18 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
                 </svg>
             </a>
-            <a href="{{ route('publico.agendar', 'pet-tosa-ana') }}"
+            @if(!empty($demoSlug))
+            <a href="{{ route('publico.agendar', $demoSlug) }}" target="_blank"
                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-white card-glass hover:bg-white/10 transition-colors border border-white/10">
                 Link público de demo
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                 </svg>
             </a>
+            @endif
         </div>
         <p class="text-gray-500 text-xs mt-8">
-            <span class="font-mono text-violet-400">admin@demo.com</span> · <span class="font-mono text-violet-400">password</span>
+            <span class="font-mono text-violet-300">admin@demo.com</span> · <span class="font-mono text-violet-300">password</span>
         </p>
     </div>
 </section>
@@ -597,7 +612,9 @@
             </div>
             <div class="flex items-center gap-6 text-xs">
                 <a href="{{ route('login') }}" class="hover:text-gray-300 transition-colors">Sistema</a>
-                <a href="{{ route('publico.agendar', 'pet-tosa-ana') }}" class="hover:text-gray-300 transition-colors">Demo público</a>
+                @if(!empty($demoSlug))
+                <a href="{{ route('publico.agendar', $demoSlug) }}" target="_blank" class="hover:text-gray-300 transition-colors">Demo público</a>
+                @endif
                 <a href="https://github.com/bruuhviiper-dev/petshop" target="_blank" class="hover:text-gray-300 transition-colors">GitHub</a>
             </div>
             <div class="text-xs">

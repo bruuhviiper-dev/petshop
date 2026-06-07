@@ -22,7 +22,27 @@
                     <div class="mt-3 p-2 bg-red-50 rounded-lg text-xs text-red-700">⚠️ Alergias: {{ $pet->allergies }}</div>
                 @endif
                 <div class="mt-4 flex gap-2">
-                    <a href="{{ route('clientes.pets.edit', [$cliente, $pet]) }}" class="flex-1 text-center py-2 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg">Editar</a>
+                    <a href="{{ route('clientes.pets.edit', [$cliente, $pet]) }}" class="flex-1 text-center py-2 text-xs font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg">Editar</a>
+                </div>
+            </x-card>
+
+            {{-- Carteirinha digital com QR Code --}}
+            @php $carteirinhaUrl = route('pet.carteirinha', $pet->public_token); @endphp
+            <x-card title="Carteirinha digital (QR)">
+                <div x-data="{ copiado: false, copiar() { navigator.clipboard.writeText('{{ $carteirinhaUrl }}'); this.copiado = true; setTimeout(() => this.copiado = false, 2000); } }"
+                     class="flex items-center gap-4">
+                    <a href="{{ $carteirinhaUrl }}" target="_blank" class="shrink-0 [&>svg]:w-24 [&>svg]:h-24 rounded-lg overflow-hidden bg-white p-1">
+                        {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(96)->margin(0)->generate($carteirinhaUrl) !!}
+                    </a>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Ficha pública (vacinas, alergias, contatos). O tutor salva no celular; a recepção escaneia no check-in.</p>
+                        <div class="flex gap-2 flex-wrap">
+                            <a href="{{ $carteirinhaUrl }}" target="_blank" class="px-3 py-1.5 text-xs font-medium text-white bg-brand rounded-lg hover:opacity-90">Abrir</a>
+                            <button type="button" @click="copiar()" class="px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg">
+                                <span x-show="!copiado">Copiar link</span><span x-show="copiado" x-cloak class="text-green-600 dark:text-green-400">Copiado!</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </x-card>
             <x-card title="Vacinas">

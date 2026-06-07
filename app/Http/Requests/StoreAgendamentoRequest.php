@@ -17,6 +17,9 @@ class StoreAgendamentoRequest extends FormRequest
             'colaborador_id' => 'nullable|exists:colaboradores,id',
             'scheduled_at'   => 'required|date|after:now',
             'notes'          => 'nullable|string|max:1000',
+            // Recorrência (banho/tosa recorrente) — não são colunas da tabela.
+            'recorrencia'    => 'nullable|in:none,weekly,biweekly,monthly',
+            'repeticoes'     => 'nullable|integer|min:1|max:52',
         ];
     }
 }

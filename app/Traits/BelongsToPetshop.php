@@ -19,8 +19,8 @@ trait BelongsToPetshop
                 return;
             }
 
-            if (Auth::check() && Auth::user()->petshop) {
-                $builder->where("{$table}.petshop_id", Auth::user()->petshop->id);
+            if (Auth::check() && ($petshopId = Auth::user()->currentPetshopId())) {
+                $builder->where("{$table}.petshop_id", $petshopId);
             }
         });
 
@@ -28,16 +28,16 @@ trait BelongsToPetshop
             if (!Schema::hasColumn($model->getTable(), 'petshop_id')) {
                 return;
             }
-            if (empty($model->petshop_id) && Auth::check() && Auth::user()->petshop) {
-                $model->petshop_id = Auth::user()->petshop->id;
+            if (empty($model->petshop_id) && Auth::check() && ($petshopId = Auth::user()->currentPetshopId())) {
+                $model->petshop_id = $petshopId;
             }
         });
     }
 
     public function scopeDoMeuPetshop(Builder $query): Builder
     {
-        if (Auth::check() && Auth::user()->petshop) {
-            return $query->where($this->getTable() . '.petshop_id', Auth::user()->petshop->id);
+        if (Auth::check() && ($petshopId = Auth::user()->currentPetshopId())) {
+            return $query->where($this->getTable() . '.petshop_id', $petshopId);
         }
         return $query;
     }

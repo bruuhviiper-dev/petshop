@@ -27,7 +27,7 @@ class AgendaController extends Controller
      */
     public function index(Request $request, ?string $data = null): View
     {
-        $petshopId = auth()->user()->petshop->id;
+        $petshopId = auth()->user()->currentPetshopId();
         $date      = $data ? Carbon::parse($data) : Carbon::today();
 
         $agendamentos = $this->agendamentoRepository
@@ -69,22 +69,48 @@ class AgendaController extends Controller
      */
     public function store(StoreAgendamentoRequest $request): JsonResponse|RedirectResponse
     {
-        $servico     = Servico::findOrFail($request->servico_id);
-        $agendamento = Agendamento::create(array_merge(
-            $request->validated(),
-            ['valor' => $servico->price]
-        ));
+        $servico = Servico::findOrFail($request->servico_id);
 
-        event(new AgendamentoCriado($agendamento));
+        // Campos da tabela (sem os de recorrência) + valor do serviço.
+        $base = collect($request->validated())
+            ->except(['recorrencia', 'repeticoes'])
+            ->put('valor', $servico->price)
+            ->all();
+
+        // Recorrência: gera N agendamentos no intervalo escolhido (semanal/quinzenal/mensal).
+        $intervalo = match ($request->input('recorrencia')) {
+            'weekly'   => 7,
+            'biweekly' => 14,
+            'monthly'  => 30,
+            default    => 0,
+        };
+        $total = $intervalo > 0 ? max(1, min((int) $request->input('repeticoes', 1), 52)) : 1;
+
+        $inicio   = Carbon::parse($base['scheduled_at']);
+        $primeiro = null;
+
+        for ($i = 0; $i < $total; $i++) {
+            $dados = $base;
+            $dados['scheduled_at'] = $inicio->copy()->addDays($intervalo * $i);
+            $agendamento = Agendamento::create($dados);
+
+            // Dispara a notificação de confirmação apenas para o primeiro da série.
+            if ($i === 0) {
+                $primeiro = $agendamento;
+                event(new AgendamentoCriado($agendamento));
+            }
+        }
 
         if ($request->expectsJson()) {
             return response()->json([
                 'success'     => true,
-                'agendamento' => $agendamento->load(['cliente', 'pet', 'servico', 'colaborador']),
+                'total'       => $total,
+                'agendamento' => $primeiro->load(['cliente', 'pet', 'servico', 'colaborador']),
             ]);
         }
 
-        return redirect()->route('agenda.index')->with('success', 'Agendamento criado com sucesso!');
+        $msg = $total > 1 ? "{$total} agendamentos recorrentes criados!" : 'Agendamento criado com sucesso!';
+        return redirect()->route('agenda.index')->with('success', $msg);
     }
 
     /**
@@ -92,14 +118,34 @@ class AgendaController extends Controller
      */
     public function updateStatus(Request $request, Agendamento $agendamento): JsonResponse
     {
-        $request->validate(['status' => 'required|in:pendente,confirmado,em_andamento,concluido,cancelado']);
+        $validated = $request->validate([
+            'status'         => 'required|in:pendente,confirmado,em_andamento,concluido,cancelado',
+            'colaborador_id' => 'nullable|exists:colaboradores,id',
+            'scheduled_at'   => 'nullable|date',
+            'notes'          => 'nullable|string|max:1000',
+        ]);
 
-        $agendamento = $this->agendamentoService->atualizarStatus($agendamento, $request->status);
+        $agendamento = $this->agendamentoService->atualizarStatus($agendamento, $validated['status']);
 
-        if ($request->has('scheduled_at')) {
-            $agendamento->update(['scheduled_at' => $request->scheduled_at]);
+        // Atribuição do responsável e demais campos (regra: agendamento entra pendente
+        // e sem colaborador; o admin/colaborador o assume aqui).
+        $updates = [];
+        if ($request->has('colaborador_id')) {
+            $updates['colaborador_id'] = $validated['colaborador_id'] ?: null;
+        }
+        if ($request->filled('scheduled_at')) {
+            $updates['scheduled_at'] = $validated['scheduled_at'];
+        }
+        if ($request->has('notes')) {
+            $updates['notes'] = $validated['notes'];
+        }
+        if ($updates) {
+            $agendamento->update($updates);
         }
 
-        return response()->json(['success' => true, 'agendamento' => $agendamento->fresh()]);
+        return response()->json([
+            'success'     => true,
+            'agendamento' => $agendamento->fresh(['cliente', 'pet', 'servico', 'colaborador']),
+        ]);
     }
 }
